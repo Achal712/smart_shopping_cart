@@ -9,7 +9,7 @@ import pandas as pd
 
 # Constants
 IMAGE_URL = "http://172.20.10.4:81/capture"  # Replace with your dynamic image URL
-MODEL_PATH = "own_data.pt"
+MODEL_PATH = "z.pt"
 REFRESH_INTERVAL = 3  # Time in seconds
 TEMP_IMAGE_PATH = "temp_image.jpg"
 PRICES = {
