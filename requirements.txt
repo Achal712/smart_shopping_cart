@@ -1,6 +1,0 @@
-streamlit
-ultralytics
-Pillow
-requests
-pandas
-opencv-python
