@@ -1,5 +1,1 @@
-streamlit==1.25.0  # Adjust to the latest compatible version
-ultralytics==8.0.20  # YOLO library
-Pillow==9.5.0  # For image processing
-requests==2.31.0  # For fetching images
-pandas==1.5.3  # For creating and displaying the table
+ultralytics==8.3.58
