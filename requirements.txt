@@ -4,3 +4,4 @@ altair
 requests
 ultralytics
 Pillow
+opencv-python-headless
