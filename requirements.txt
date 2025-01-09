@@ -4,4 +4,4 @@ altair==5.5.0
 requests==2.32.3
 ultralytics==8.3.55
 Pillow==10.2.0
-opencv-python
+opencv-python==4.10.0
