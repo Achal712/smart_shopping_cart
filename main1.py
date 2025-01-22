@@ -3,15 +3,13 @@ from ultralytics import YOLO
 from PIL import Image
 import requests
 from io import BytesIO
-import os
-import time
 import pandas as pd
+import time
 
 # Constants
 IMAGE_URL = "http://172.20.10.2:81/capture"  # Replace with your dynamic image URL
 MODEL_PATH = "own_data.pt"
 REFRESH_INTERVAL = 3  # Time in seconds
-TEMP_IMAGE_PATH = "temp_image.jpg"
 PRICES = {
     "kissan_mixed_fruit_jam": 262,
     "amrutanjan": 48,
@@ -30,47 +28,43 @@ PRICES = {
     "maggi_atta_noodles": 14,
     "moms_magic_biscuit": 35,
     "lion_honey": 270,
-    "dove_soap": 80
+    "dove_soap": 80,
 }
 
 # Initialize YOLO model
 model = YOLO(MODEL_PATH)
 
-# Set up the Streamlit app
+# Set up Streamlit app
 st.title("YOLO Object Detection App")
-st.write("Automatically fetch and process images from a changing URL.")
+st.write("Automatically fetch and process images from a changing URL every few seconds.")
 
-# Loop to keep fetching and processing images
-while True:
+# Placeholders for dynamic updates
+image_placeholder = st.empty()
+table_placeholder = st.empty()
+
+# Function to fetch and process the image
+def fetch_and_process_image():
     try:
         # Fetch the image from the URL
-        response = requests.get(IMAGE_URL)
-        response.raise_for_status()  # Raise an exception for HTTP errors
-
-        # Open the image using PIL
+        response = requests.get(IMAGE_URL, timeout=5)
+        response.raise_for_status()
         image = Image.open(BytesIO(response.content))
 
-        # Convert to RGB if the image has an alpha channel
-        if image.mode == "RGBA":
-            image = image.convert("RGB")
+        # Perform object detection
+        results = model.predict(source=image, verbose=False)
 
-        # Save the image temporarily
-        image.save(TEMP_IMAGE_PATH)
-        st.image(image, caption="Fetched Image", use_column_width=True)
+        # Display the image
+        image_placeholder.image(image, caption="Fetched Image", width=600)
 
-        # Perform prediction
-        with st.spinner("Performing object detection..."):
-            results = model.predict(source=TEMP_IMAGE_PATH, verbose=False)
-
-        # Process the results
+        # Process results and calculate totals
         items = []
         for result in results:
             for box in result.boxes:
-                label_index = int(box.cls)  # Get the class index
-                label_name = result.names[label_index]  # Get the class name
-                price = PRICES.get(label_name, 0)  # Get the price of the item
+                label_index = int(box.cls)
+                label_name = result.names[label_index]
+                price = PRICES.get(label_name, 0)
 
-                # Update or add item to the list
+                # Add or update item
                 existing_item = next((item for item in items if item["ITEM NAME"] == label_name), None)
                 if existing_item:
                     existing_item["QUANTITY"] += 1
@@ -78,24 +72,20 @@ while True:
                 else:
                     items.append({"ITEM NAME": label_name, "QUANTITY": 1, "AMOUNT": price})
 
-        # Display the results
-        if not items:
-            st.warning("No objects detected.")
-        else:
-            total_amount = sum(item["AMOUNT"] for item in items)
-            items.append({"ITEM NAME": "Total", "QUANTITY": "", "AMOUNT": total_amount})
+        # Display the table
+        if items:
+            total = sum(item["AMOUNT"] for item in items)
+            items.append({"ITEM NAME": "Total", "QUANTITY": "", "AMOUNT": total})
             df = pd.DataFrame(items)
-            st.table(df)
-
-        # Clean up the temporary image file
-        os.remove(TEMP_IMAGE_PATH)
-
-        # Wait before fetching the next image
-        time.sleep(REFRESH_INTERVAL)
-
+            table_placeholder.table(df)
+        else:
+            table_placeholder.warning("No objects detected.")
     except requests.exceptions.RequestException as e:
-        st.error(f"Failed to fetch image from the URL. Error: {e}")
-        break
+        table_placeholder.error(f"Error fetching image: {e}")
     except Exception as e:
-        st.error(f"An error occurred: {e}")
-        break
+        table_placeholder.error(f"An error occurred: {e}")
+
+# Main loop for refreshing content
+while True:
+    fetch_and_process_image()
+    time.sleep(REFRESH_INTERVAL)
