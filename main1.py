@@ -7,7 +7,7 @@ import pandas as pd
 import time
 
 # Constants
-IMAGE_URL = "https://b3dc-152-58-238-173.ngrok-free.app/capture"  # Replace with your dynamic image URL
+IMAGE_URL = "http://172.20.10.2:81/capture"  # Replace with your dynamic image URL
 MODEL_PATH = "own_data.pt"
 REFRESH_INTERVAL = 3  # Time in seconds
 PRICES = {
