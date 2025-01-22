@@ -1,7 +1,5 @@
 streamlit
-pandas
-altair
-requests
 ultralytics
-Pillow
-opencv-python-headless
+pillow
+requests
+pandas
